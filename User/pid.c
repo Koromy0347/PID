@@ -27,16 +27,16 @@ void PID_PositionParam_init(PID_t *pid)
     pid->error[0] = 0;
     pid->error[1] = 0;
     pid->output = 0;
-    pid->outputMax = 104;
+    pid->outputMax = 52;
     pid->outputMin = 0;
 }
 
 void PID_Calc(__IO PID_t *pid)
 {
     pid->cur_error = pid->ref - pid->fdb;
-    pid->output += pid->KP * (pid->cur_error - pid->error[1])
+    pid->output += 16*(pid->KP * (pid->cur_error - pid->error[1])
                  + pid->KI * pid->cur_error 
-                 + pid->KD * (pid->cur_error - 2 * pid->error[1] + pid->error[0]);
+                 + pid->KD * (pid->cur_error - 2 * pid->error[1] + pid->error[0]));
     pid->error[0] = pid->error[1];
     pid->error[1] = pid->cur_error;
 

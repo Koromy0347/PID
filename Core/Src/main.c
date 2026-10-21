@@ -25,6 +25,7 @@
 #include "motor.h"
 #include "pid.h"
 #include <stdio.h>
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -77,9 +78,10 @@ static void SendMotorTelemetry(void)
 
   int length = snprintf((char *)motor_telemetry_buffer,
                         sizeof(motor_telemetry_buffer),
-                        "motor_position_ref: %ld, motor_position_fdb: %ld\r\n",
+                        "motor_position_ref: %ld, motor_position_fdb: %ld, motor_dutyfactor: %ld\r\n",
                         motor_ptr->motor_position_ref,
-                        motor_ptr->motor_position_fdb);
+                        motor_ptr->motor_position_fdb,
+                        motor_ptr->motor_dutyfactor);
   if (length < 0 || (size_t)length >= sizeof(motor_telemetry_buffer))
   {
     Error_Handler();
