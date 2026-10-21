@@ -5,9 +5,9 @@ static PID_t pid_position;
 static PID_t pid_speed;
 
 MOTOR_t *motor_ptr = &motor_instance;
-uint32_t encoder_count_last;
-uint32_t encoder_count;
-long deffer;
+int32_t encoder_count_last;
+int32_t encoder_count;
+int32_t deffer;
 
 void MOTOR_Enable(MOTOR_t *motor)
 {
