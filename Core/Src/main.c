@@ -24,7 +24,7 @@
 #include "gpio.h"
 #include "motor.h"
 #include "pid.h"
-
+#include <stdio.h>
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -48,6 +48,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+static uint8_t motor_telemetry_buffer[96];
+static uint32_t motor_telemetry_last_tick;
 
 /* USER CODE END PV */
 
@@ -59,6 +61,36 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+static void SendMotorTelemetry(void)
+{
+  uint32_t now = HAL_GetTick();
+  if ((uint32_t)(now - motor_telemetry_last_tick) < 100U)
+  {
+    return;
+  }
+  motor_telemetry_last_tick = now;
+
+  if (HAL_UART_GetState(&huart1) != HAL_UART_STATE_READY)
+  {
+    return;
+  }
+
+  int length = snprintf((char *)motor_telemetry_buffer,
+                        sizeof(motor_telemetry_buffer),
+                        "motor_position_ref: %ld, motor_position_fdb: %ld\r\n",
+                        motor_ptr->motor_position_ref,
+                        motor_ptr->motor_position_fdb);
+  if (length < 0 || (size_t)length >= sizeof(motor_telemetry_buffer))
+  {
+    Error_Handler();
+  }
+
+  if (HAL_UART_Transmit_DMA(&huart1, motor_telemetry_buffer,
+                            (uint16_t)length) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
 
 /* USER CODE END 0 */
 
@@ -108,6 +140,7 @@ int main(void)
   {
     /* USER CODE END WHILE */
     MOTOR_Control(motor_ptr);
+    SendMotorTelemetry();
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
