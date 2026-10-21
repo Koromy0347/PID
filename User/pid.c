@@ -3,8 +3,8 @@
 void PID_SpeedParam_init(PID_t *pid)
 {
     pid->KP = 1.0f;
-    pid->KI = 0;
-    pid->KD = 0;
+    pid->KI = 0.01f;
+    pid->KD = 0.05f;
     pid->fdb = 0;
     pid->ref = 0;
     pid->cur_error = 0;
