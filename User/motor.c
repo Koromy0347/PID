@@ -28,7 +28,7 @@ void MOTOR_Init(MOTOR_t *motor)
     motor->pid_speed_control = &pid_speed;
     motor->pid_flag=0; //PID控制标志，0表示不进行PID计算，1表示进行PID计算
     motor->motor_dutyfactor=0; //电机占空比
-    motor->motor_position_ref=3120; //电机目标位置
+    motor->motor_position_ref=6240; //电机目标位置
     motor->motor_speed_ref=0; //电机目标角速度
     motor->motor_position_fdb=0; //电机反馈位置
 }
