@@ -26,6 +26,9 @@
 #include "pid.h"
 #include <stdio.h>
 
+#define MOTOR_DIRECTION_PAUSE_MS 500U
+#define MOTOR_POSITION_TOLERANCE 20
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -51,6 +54,9 @@
 /* USER CODE BEGIN PV */
 static uint8_t motor_telemetry_buffer[96];
 static uint32_t motor_telemetry_last_tick;
+static uint8_t motor_sequence_pausing;
+static uint8_t motor_next_move_clockwise;
+static uint32_t motor_sequence_pause_start;
 
 /* USER CODE END PV */
 
@@ -62,6 +68,38 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+static void UpdateMotorSequence(void)
+{
+  if (motor_sequence_pausing != 0U)
+  {
+    if ((uint32_t)(HAL_GetTick() - motor_sequence_pause_start) >=
+        MOTOR_DIRECTION_PAUSE_MS)
+    {
+      if (motor_next_move_clockwise != 0U)
+      {
+        motor_ptr->motor_position_ref -= MOTOR_ENCODER_COUNTS_PER_REV;
+      }
+      else
+      {
+        motor_ptr->motor_position_ref +=
+            2 * MOTOR_ENCODER_COUNTS_PER_REV;
+      }
+      motor_next_move_clockwise = (uint8_t)!motor_next_move_clockwise;
+      motor_sequence_pausing = 0U;
+    }
+    return;
+  }
+
+  int32_t position_error =
+      motor_ptr->motor_position_ref - motor_ptr->motor_position_fdb;
+  if (position_error >= -MOTOR_POSITION_TOLERANCE &&
+      position_error <= MOTOR_POSITION_TOLERANCE)
+  {
+    motor_sequence_pause_start = HAL_GetTick();
+    motor_sequence_pausing = 1U;
+  }
+}
+
 static void SendMotorTelemetry(void)
 {
   uint32_t now = HAL_GetTick();
@@ -142,6 +180,7 @@ int main(void)
   {
     /* USER CODE END WHILE */
     MOTOR_Control(motor_ptr);
+    UpdateMotorSequence();
     SendMotorTelemetry();
     /* USER CODE BEGIN 3 */
   }

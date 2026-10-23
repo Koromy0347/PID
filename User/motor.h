@@ -7,6 +7,8 @@
 #include "math.h"
 #include "pid.h"
 
+#define MOTOR_ENCODER_COUNTS_PER_REV 1560
+
 typedef struct //重写
 {
     uint8_t pid_flag; //PID控制标志，0表示不进行PID计算，1表示进行PID计算
